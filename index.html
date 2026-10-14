@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merchant Onboarding | Lumina Pay — Portfolio Prototype by Kiki Novalia</title>
+  <meta name="author" content="Kiki Novalia">
+  <meta name="description" content="Fictional merchant onboarding prototype (portfolio). Not affiliated with any real company. © Kiki Novalia">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            sb: {
+              DEFAULT: '#1E3A8A',
+              top: '#0F172A',
+              hover: '#1E40AF',
+              act: '#1E40AF',
+              bdr: '#1E40AF',
+              txt: '#CBD5E1',
+              txt_hi: '#FFFFFF',
+              sub: '#0F172A'
+            },
+            brandblue: {
+              DEFAULT: '#1E3A8A',
+              light: '#F8FAFC',
+              indigo: '#2563EB',
+              indigo_d: '#1D4ED8',
+              indigo_lt: '#EFF6FF'
+            },
+            /* Design system Admin Portal v2 */
+            ds: {
+              navy: '#0F172A',      /* header, sidebar aktif, tombol primer */
+              blue: '#2563EB',      /* link, tombol Search, underline tab aktif, ikon */
+              green: '#059669',     /* status "On Duty" / indikator Live View */
+              pagebg: '#F8FAFC',    /* latar halaman */
+              txt: '#0F172A',       /* teks utama */
+              txt2: '#64748B'       /* teks sekunder */
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --sb: #1E3A8A;
+      --sb-top: #0F172A;
+      --sb-hover: #1E40AF;
+      --sb-act: #1E3A8A;
+      --sb-bdr: #1E40AF;
+      --sb-txt: #CBD5E1;
+      --sb-txt-hi: #FFFFFF;
+      --sb-sub: #0F172A;
+      --sb-sub-act: rgba(30,58,138,.25);
+      --hdr: #1E3A8A;
+      --green: #059669;
+      --green-d: #047857;
+      --green-lt: #ECFDF5;
+      --blue: #1E3A8A;
+      --blue-lt: #F8FAFC;
+      --indigo: #2563EB;
+      --indigo-d: #1D4ED8;
+      --indigo-lt: #EFF6FF;
+      --bdr: #E2E8F0;
+      --bg: #FFFFFF;
+      --surf: #FFFFFF;
+      --muted: #64748B;
+      --lbl: #334155;
+      --head: #0F172A;
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 99px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .screen {
+      display: none;
+    }
+    .screen.on {
+      display: block;
+    }
+    #s-status.on,
+    #s-basis.on,
+    #s-outlet.on,
+    #s-update.on,
+    #s-nda.on {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 40px);
+      overflow: hidden;
+    }
+    #s-status.on > .flex,
+    #s-basis.on > .flex,
+    #s-outlet.on > .flex,
+    #s-update.on > .flex,
+    #s-nda.on > .flex {
+      flex: 1;
+      overflow: hidden;
+    }
+    #sigCanvas { touch-action: none; }
+
+    aside::-webkit-scrollbar {
+      width: 3px;
+    }
+    aside::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 99px;
+    }
+
+    .sub {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height .25s ease;
+      background: var(--sb-sub);
+    }
+    .sub.open {
+      max-height: 320px;
+    }
+
+    .chev {
+      transition: transform .2s;
+    }
+    .ni.open .chev {
+      transform: rotate(-90deg);
+    }
+
+    .pf-card-hdr {
+      background: var(--blue);
+      padding: 16px 32px;
+      border-radius: 16px 16px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pf-card-hdr .stepbar {
+      width: 100%;
+      margin-bottom: 0;
+      flex-wrap: nowrap;
+    }
+    .pf-card-hdr .sc {
+      width: 36px;
+      height: 36px;
+      font-size: 13px;
+      background: rgba(255,255,255,.12);
+      border: 2px solid rgba(255,255,255,.3);
+      color: rgba(255,255,255,.6);
+    }
+    .pf-card-hdr .sc.done {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+    .pf-card-hdr .sc.cur {
+      background: #fff;
+      border-color: #fff;
+      color: var(--blue);
+      box-shadow: 0 0 0 5px rgba(255,255,255,.18);
+    }
+    .pf-card-hdr .sl {
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,.6);
+      margin-left: 8px;
+    }
+    .pf-card-hdr .sl.cur {
+      color: #fff;
+      font-weight: 700;
+    }
+    .pf-card-hdr .sl.done {
+      color: rgba(255,255,255,.9);
+      font-weight: 600;
+    }
+    .pf-card-hdr .sconn {
+      flex: 1;
+      height: 3px;
+      background: rgba(255,255,255,.2);
+      margin: 0 12px;
+      border-radius: 99px;
+      min-width: 30px;
+    }
+    .pf-card-hdr .sconn.done {
+      background: var(--green);
+    }
+
+    .pf-card-hdr .sc-node {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: opacity .15s;
+      user-select: none;
+      border-radius: 8px;
+      padding: 2px 4px;
+    }
+    .pf-card-hdr .sc-node:hover {
+      opacity: .75;
+    }
+
+    @keyframes sparkle {
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.05); filter: brightness(1.25); }
+    }
+    .ai-sparkle {
+      animation: sparkle 3s infinite ease-in-out;
+    }
+    #portfolio-badge{position:fixed;right:12px;bottom:12px;z-index:2147483001;pointer-events:none;
+      background:rgba(15,23,42,.85);color:#fff;font:600 11px/1.3 Arial,Helvetica,sans-serif;
+      padding:6px 10px;border-radius:8px;letter-spacing:.2px;}
+    #portfolio-badge span{display:block;font-weight:400;opacity:.8;font-size:10px;}
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-900 font-sans antialiased min-h-screen flex flex-col justify-between">
+
+  <!-- ================= STREAMING_CHUNK: TOP LAYER ROLE SWITCHER ================= -->
+  <div class="bg-[#0F172A] text-slate-200 px-4 py-2 flex flex-col lg:flex-row justify-between items-center text-xs gap-3 z-50 border-b border-slate-800">
+    <div class="flex flex-col sm:flex-row items-center gap-2">
+      <span class="bg-[#1E3A8A] text-blue-200 border border-blue-600/40 px-2.5 py-0.5 rounded text-[10px] font-bold shrink-0" data-i18n="demo_mode">MODE SIMULASI</span>
+      <span class="text-slate-400 text-center sm:text-left text-[11px]" data-i18n="demo_desc">Gunakan kontrol ini untuk melihat sudut pandang Pengguna atau Admin Lumina Pay.</span>
+    </div>
+    
+    <div class="flex flex-wrap items-center gap-2 shrink-0">
+      <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
+        <button onclick="switchRole('merchant')" id="roleBtn-merchant" class="px-3 py-1 rounded text-[11px] font-bold bg-white text-slate-900 shadow" data-i18n="btn_merchant_portal">👤 Merchant</button>
+        <button onclick="switchRole('admin')" id="roleBtn-admin" class="px-3 py-1 rounded text-[11px] font-bold text-slate-400 hover:text-white" data-i18n="btn_admin_portal">⚙️ Admin Lumina Pay</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= STREAMING_CHUNK: PORTAL MERCHANT IMMERSIVE APP SHELL ================= -->
+  <div id="merchant-app-container" class="flex-1 flex flex-col relative bg-white">
+
+    <!-- ════════ SCREEN: LOGIN (PREMIUM CARD DESIGN) ════════ -->
+    <section class="screen" id="s-login">
+      <div class="h-12 bg-white border-b border-gray-200 flex items-center justify-end px-5 gap-4">
+        <span class="id-pill inline-flex items-center gap-1.5 text-xs font-bold cursor-pointer"></span>
+      </div>
+      <div class="flex items-center justify-center p-4 md:p-8 min-h-[calc(100vh-80px)]">
+        <div class="flex flex-col md:flex-row w-full max-w-4xl bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xl">
+          <!-- Brand Side -->
+          <div class="flex-1 bg-gradient-to-br from-slate-50 to-blue-50/50 flex flex-col items-center justify-center p-10 border-b md:border-b-0 md:border-r border-gray-200">
+            <div class="text-center">
+              <div class="text-3xl font-extrabold text-[#1E3A8A] tracking-tight flex items-center justify-center gap-2">
+                <span class="bg-[#1E3A8A] text-white px-3 py-1 rounded-lg">E2</span>Pay
+              </div>
+              <p class="text-xs text-gray-500 mt-2" data-i18n="subsidiary">Portfolio prototype</p>
+            </div>
+            <div class="mt-8 text-center text-xs text-gray-500 space-y-1">
+              <p data-i18n="brand_feature">Mendukung otomatisasi KYC/KYB &amp; integrasi sistem inti</p>
+            </div>
+          </div>
+          <!-- Form Side -->
+          <div class="flex-1 p-6 md:p-10 flex flex-col justify-center">
+            <h2 class="text-xl font-bold text-gray-900 mb-2" data-i18n="login_title">Masuk ke dalam akun Anda</h2>
+            <p class="text-xs text-gray-500 mb-6" data-i18n="login_subtitle">Portal pendaftaran merchant mandiri (Self-Service Onboarding)</p>
+            <div class="mb-4">
+              <label class="block text-xs font-semibold text-gray-700 mb-1.5" data-i18n="email_label">Email atau Nomor Ponsel</label>
+              <input id="login-email" type="text" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:border-brandblue focus:ring-1 focus:ring-brandblue outline-none" placeholder="name@email.com / 081234567890" value="merchant.demo@example.com">
+            </div>
+            <div class="mb-6">
+              <label class="block text-xs font-semibold text-gray-700 mb-1.5" data-i18n="password_label">Password</label>
+              <input type="password" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:border-brandblue focus:ring-1 focus:ring-brandblue outline-none" value="password">
+              <div class="text-right mt-2">
+                <a href="javascript:void(0)" class="text-xs font-semibold text-gray-500 hover:text-brandblue" data-i18n="forgot_pass">Lupa Password?</a>
+              </div>
+            </div>
+            <div class="flex flex-col gap-3">
+              <button class="w-full h-11 bg-[#1E3A8A] text-white rounded-lg font-semibold text-sm hover:bg-opacity-95 transition shadow-sm" onclick="go('s-2fa')" data-i18n="login_btn">MASUK</button>
+              <button class="w-full h-11 border border-gray-300 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-50 transition" onclick="go('s-signup')" data-i18n="register_btn">DAFTAR AKUN BARU</button>
+            </div>
+            <p class="text-[11px] text-gray-400 text-center mt-6" data-i18n="docs_link">Lihat dokumentasi Dashboard Lumina Pay</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ SCREEN: SIGN UP ════════ -->
+    <section class="screen" id="s-signup">
+      <div class="h-12 bg-white border-b border-gray-200 flex items-center justify-end px-5 gap-4">
+        <span class="id-pill inline-flex items-center gap-1.5 text-xs font-bold cursor-pointer"></span>
+      </div>
+      <div class="flex items-center justify-center p-4 md:p-8 min-h-[calc(100vh-80px)]">
+        <div class="flex flex-col md:flex-row w-full max-w-4xl bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xl">
+          <!-- Brand Side -->
+          <div class="flex-1 bg-gradient-to-br from-slate-50 to-blue-50/50 flex flex-col items-center justify-center p-10 border-b md:border-b-0 md:border-r border-gray-200">
+            <div class="text-center">
+              <div class="text-3xl font-extrabold text-[#1E3A8A] tracking-tight flex items-center justify-center gap-2">
+                <span class="bg-[#1E3A8A] text-white px-3 py-1 rounded-lg">E2</span>Pay
+              </div>
+              <p class="text-xs text-gray-500 mt-2" data-i18n="subsidiary">Portfolio prototype</p>
+            </div>
+            <div class="mt-8 text-center text-xs text-gray-500 space-y-1">
+              <p data-i18n="brand_feature">Mendukung otomatisasi KYC/KYB &amp; integrasi sistem inti</p>
+            </div>
+          </div>
+          <!-- Form Side -->
+          <div class="flex-1 p-6 md:p-10 flex flex-col justify-center">
+            <h2 class="text-xl font-bold text-gray-900 mb-2" data-i18n="signup_title">Daftarkan Bisnis Anda</h2>
+            <p class="text-xs text-gray-500 mb-6" data-i18n="signup_subtitle">Buat akun untuk memulai pendaftaran merchant.</p>
+            <div class="mb-4">
+              <label class="block text-xs font-semibold text-gray-700 mb-1.5" data-i18n="signup_company_label">Nama Usaha</label>
+              <input type="text" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:border-brandblue focus:ring-1 focus:ring-brandblue outline-none" data-i18n-placeholder="signup_company_ph" placeholder="Masukkan nama usaha">
+            </div>
+            <div class="mb-4">
+              <label class="block text-xs font-semibold text-gray-700 mb-1.5" data-i18n="signup_fullname_label">Nama Lengkap Pemilik Bisnis</label>
+              <input id="signup-fullname" type="text" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:border-brandblue focus:ring-1 focus:ring-brandblue outline-none" data-i18n-placeholder="signup_fullname_ph" placeholder="Masukkan nama lengkap Anda">
+            </div>
+            <div class="mb-4">
+              <label class="block text-xs font-semibold text-gray-700 mb-1.5" data-i18n="signup_email_label">Email</label>
+              <input type="email" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:border-brandblue focus:ring-1 focus:ring-brandblue outline-none" placeholder="name@email.com">
+            </div>
+            <div class="mb-4">
+              <label class="block text-xs font-semibold text-gray-700 mb-1.5" data-i18n="signup_phone_label">Nomor Ponsel</label>
+              <input type="tel" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:border-brandblue focus:ring-1 focus:ring-brandblue outline-none" placeholder="081234567890">
+            </div>
+            <div class="mb-1">
+              <label class="block text-xs font-semibold text-gray-700 mb-1.5" data-i18n="password_label">Password</label>
+              <div class="relative">
+                <input id="signup-pass" type="password" class="w-full h-10 border border-gray-300 rounded-lg pl-3 pr-9 text-sm focus:border-brandblue focus:ring-1 focus:ring-brandblue outline-none" data-i18n-placeholder="signup_password_ph" placeholder="Minimal 8 karakter">
+                <button type="button" class="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600" onclick="togglePwd('signup-pass', this)">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <p class="text-[11px] text-gray-500 mb-4" data-i18n="signup_password_hint">Minimal 8 karakter, kombinasi huruf besar, kecil &amp; angka</p>
+            <div class="mb-6">
+              <label class="block text-xs font-semibold text-gray-700 mb-1.5" data-i18n="signup_confirm_label">Konfirmasi Kata Sandi</label>
+              <div class="relative">
+                <input id="signup-cpass" type="password" class="w-full h-10 border border-gray-300 rounded-lg pl-3 pr-9 text-sm focus:border-brandblue focus:ring-1 focus:ring-brandblue outline-none" data-i18n-placeholder="signup_confirm_ph" placeholder="Ulangi kata sandi">
+                <button type="button" class="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600" onclick="togglePwd('signup-cpass', this)">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <button class="w-full h-11 bg-[#1E3A8A] text-white rounded-lg font-semibold text-sm hover:bg-opacity-95 transition shadow-sm" onclick="submitSignup()" data-i18n="signup_btn">DAFTAR</button>
+            <p class="text-sm text-gray-500 text-center mt-4">
+              <span data-i18n="signup_have_account">Sudah punya akun?</span>
+              <a href="javascript:void(0)" class="text-[#1E3A8A] font-semibold" onclick="go('s-login')" data-i18n="signup_login_link">Masuk</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ SCREEN: 2FA ENABLE ════════ -->
+    <section class="screen" id="s-2fa">
+      <div class="h-12 bg-[#0F172A] border-b border-slate-800 flex items-center justify-end px-5 gap-4 text-white">
+        <span class="id-pill inline-flex items-center gap-1.5 text-xs font-bold cursor-pointer"></span>
+        <a class="text-xs font-semibold text-gray-300 hover:text-white" href="javascript:void(0)" onclick="go('s-login')" data-i18n="exit_btn">Keluar</a>
+      </div>
+      <div class="flex items-center justify-center p-4 md:p-8 min-h-[calc(100vh-80px)]">
+        <div class="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-xl p-6 md:p-8 text-center">
+          <div class="w-16 h-16 rounded-full bg-[#EFF6FF] text-[#1E3A8A] flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 mb-3" data-i18n="2fa_title">Pengaktifan 2-Step Verification</h3>
+          <p class="text-sm text-gray-500 leading-relaxed mb-6" data-i18n="2fa_desc">Untuk keamanan akun dan dana Anda, Lumina Pay mewajibkan verifikasi 2 langkah. Setiap kali masuk, Anda akan memverifikasi identitas Anda menggunakan kode OTP yang dikirim ke email terdaftar.</p>
+          <button class="w-full h-11 bg-[#1E3A8A] text-white rounded-lg font-semibold text-sm hover:bg-opacity-95 transition shadow-sm" onclick="goToOtp()" data-i18n="start_now_btn">Mulai Sekarang</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ STREAMING_CHUNK: OTP INPUT SCREEN ════════ -->
+    <section class="screen" id="s-otp">
+      <div class="h-12 bg-[#0F172A] border-b border-slate-800 flex items-center justify-end px-5 gap-4 text-white">
+        <span class="id-pill inline-flex items-center gap-1.5 text-xs font-bold cursor-pointer"></span>
+        <a class="text-xs font-semibold text-gray-300 hover:text-white" href="javascript:void(0)" onclick="go('s-login')" data-i18n="exit_btn">Keluar</a>
+      </div>
+      <div class="flex items-center justify-center p-4 md:p-8 min-h-[calc(100vh-80px)]">
+        <div class="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-xl p-6 md:p-8">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-900" data-i18n="otp_title">Masukkan Kode Verifikasi</h3>
+            <button class="text-gray-400 hover:text-gray-600" onclick="go('s-2fa')">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <p class="text-sm text-gray-500 mb-6">
+            <span data-i18n="otp_desc">Kami telah mengirimkan 6-digit kode OTP ke alamat email</span>
+            <span class="font-bold text-gray-800" id="otp-target-email">merchant.demo@example.com</span>.
+            <span data-i18n="otp_enter">Masukkan kode di bawah ini:</span>
+          </p>
+          
+          <div class="flex gap-2 justify-center mb-6" data-code="otp">
+            <input class="w-10 h-12 md:w-12 md:h-14 border-2 border-gray-300 focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100 rounded-xl text-xl md:text-2xl font-bold text-center outline-none transition" maxlength="1" inputmode="numeric" value="8">
+            <input class="w-10 h-12 md:w-12 md:h-14 border-2 border-gray-300 focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100 rounded-xl text-xl md:text-2xl font-bold text-center outline-none transition" maxlength="1" inputmode="numeric" value="2">
+            <input class="w-10 h-12 md:w-12 md:h-14 border-2 border-gray-300 focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100 rounded-xl text-xl md:text-2xl font-bold text-center outline-none transition" maxlength="1" inputmode="numeric" value="5">
+            <input class="w-10 h-12 md:w-12 md:h-14 border-2 border-gray-300 focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100 rounded-xl text-xl md:text-2xl font-bold text-center outline-none transition" maxlength="1" inputmode="numeric" value="9">
+            <input class="w-10 h-12 md:w-12 md:h-14 border-2 border-gray-300 focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100 rounded-xl text-xl md:text-2xl font-bold text-center outline-none transition" maxlength="1" inputmode="numeric" value="0">
+            <input class="w-10 h-12 md:w-12 md:h-14 border-2 border-gray-300 focus:border-[#1E3A8A] focus:ring-2 focus:ring-blue-100 rounded-xl text-xl md:text-2xl font-bold text-center outline-none transition" maxlength="1" inputmode="numeric" value="1">
+          </div>
+          <div class="text-center text-xs text-gray-500 mb-6">
+            <span data-i18n="otp_resend_prefix">Tidak menerima kode?</span>
+            <span id="otp-resend-live" class="font-semibold text-gray-600"></span>
+          </div>
+          <div class="flex gap-3">
+            <button class="flex-1 h-11 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition" onclick="go('s-2fa')" data-i18n="cancel">Batal</button>
+            <button class="flex-1 h-11 bg-[#1E3A8A] text-white rounded-lg text-sm font-semibold hover:bg-opacity-95 transition shadow-sm" onclick="go('s-verified')" data-i18n="continue">Lanjut</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ SCREEN: VERIFIED SUCCESS ════════ -->
+    <section class="screen" id="s-verified">
+      <div class="h-12 bg-[#0F172A] border-b border-slate-800 flex items-center justify-end px-5 gap-4 text-white">
+        <span class="id-pill inline-flex items-center gap-1.5 text-xs font-bold cursor-pointer"></span>
+        <a class="text-xs font-semibold text-gray-300 hover:text-white" href="javascript:void(0)" onclick="go('s-login')" data-i18n="exit_btn">Keluar</a>
+      </div>
+      <div class="flex items-center justify-center p-4 md:p-8 min-h-[calc(100vh-80px)]">
+        <div class="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-xl p-6 md:p-8 text-center">
+          <div class="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 mb-3" data-i18n="ver_title">Verifikasi 2-Langkah Telah Diaktifkan</h3>
+          <p class="text-sm text-gray-500 mb-6" data-i18n="ver_desc">Setiap kali Anda masuk ke Dashboard Lumina Pay, Anda harus memasukkan kata sandi dan kode verifikasi.</p>
+          <button class="w-full h-11 bg-[#1E3A8A] text-white rounded-lg font-semibold text-sm hover:bg-opacity-95 transition shadow-sm" onclick="go('s-basis')" data-i18n="done">Selesai</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ STREAMING_CHUNK: BUSINESS BASIS SELECTION ════════ -->
+    <section class="screen" id="s-basis">
+      <div class="flex h-full overflow-hidden">
+        <div id="s-basis-sidebar"></div>
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <div id="s-basis-header"></div>
+          <div class="flex-1 overflow-y-auto bg-white">
+          <div class="flex items-center justify-center p-4 md:p-8 min-h-[calc(100vh-52px)]">
+        <div class="w-full max-w-3xl bg-white border border-gray-200 rounded-2xl shadow-xl p-6 md:p-8">
+
+          <!-- Main Selection Body -->
+          <div class="w-full">
+            <h3 class="text-xl font-bold text-gray-900 mb-1" data-i18n="basis_title">Pilih Jenis Bisnis</h3>
+            <p class="text-xs text-gray-500 mb-6" data-i18n="basis_sub">Pilih jenis bisnis yang paling sesuai dengan kebutuhan Anda.</p>
+
+            <div class="mb-5">
+              <label class="block text-xs font-semibold text-gray-700 mb-2" data-i18n="basis_q1">Di negara mana bisnis Anda terdaftar?</label>
+              <div class="flex border border-gray-300 rounded-xl p-1 gap-1 max-w-xs bg-gray-50">
+                <button class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#1E3A8A] shadow-sm transition" id="btn-country-id" onclick="toggleCountry('id')" data-i18n="basis_btn_id">Indonesia</button>
+                <button class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-gray-500 transition" id="btn-country-ln" onclick="toggleCountry('ln')" data-i18n="basis_btn_ln">Luar negeri</button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 mb-6">
+              <!-- Personal Selection Card -->
+              <div class="border-2 border-gray-200 rounded-xl p-5 cursor-pointer hover:border-slate-300 transition flex flex-col justify-between" id="card-ent-individu" onclick="pickBiz('individu')">
+                <div class="flex items-center justify-between w-full">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-lg">👤</div>
+                    <div>
+                      <h4 class="text-sm font-bold text-gray-900" data-i18n="basis_t1">Personal</h4>
+                      <p class="text-xs text-gray-500" data-i18n="basis_d1">Bisnis yang dimiliki oleh individu, bukan perusahaan.</p>
+                      <p id="individu-unavailable-note" class="text-[11px] text-amber-700 font-medium mt-1.5 hidden"></p>
+                    </div>
+                  </div>
+                  <div class="text-xs font-bold text-[#1E3A8A] flex items-center gap-1 choose-label" style="visibility: hidden;"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> <span data-i18n="basis_chosen">Dipilih</span></div>
+                </div>
+              </div>
+
+              <!-- Perusahaan Selection Card -->
+              <div class="border-2 border-gray-200 rounded-xl p-5 cursor-pointer hover:border-slate-300 transition flex flex-col justify-between" id="card-ent-badan" onclick="pickBiz('badan')">
+                <div class="flex items-center justify-between w-full">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-50 text-brandblue flex items-center justify-center text-lg">🏢</div>
+                    <div>
+                      <h4 class="text-sm font-bold text-gray-900" data-i18n="basis_t2">Perusahaan</h4>
+                      <p class="text-xs text-gray-500" data-i18n="basis_d2">Usaha yang memiliki legalitas organisasi seperti PT, CV, Yayasan, Asosiasi dan lain-lain.</p>
+                    </div>
+                  </div>
+                  <div class="text-xs font-bold text-[#1E3A8A] flex items-center gap-1 choose-label" id="label-badan-opt" style="visibility: hidden;"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> <span data-i18n="basis_chosen">Dipilih</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic Guidelines depending on Entity -->
+            <div id="basis-checklist-container" class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6 hidden">
+              <h4 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5">
+                <span>📋</span> <span data-i18n="basis_additional_note">Catatan tambahan untuk</span> <span id="basis-type-title" class="underline">Perusahaan</span>:
+              </h4>
+              <p class="text-[11px] text-slate-600 mb-3" data-i18n="basis_prepare_docs">Mohon siapkan dokumen-dokumen yang diperlukan ini:</p>
+              <ul class="list-disc pl-5 space-y-1 text-[11px] text-slate-700 font-medium" id="basis-doc-list">
+              </ul>
+            </div>
+
+            <!-- Interactive Payment Channels preview -->
+            <div id="payment-channels-preview" class="border border-slate-200 rounded-xl p-4 mb-6 hidden">
+              <h4 class="text-[11px] font-bold text-gray-600 uppercase tracking-wider mb-3" data-i18n="basis_channels_title">Metode Pembayaran yang Tersedia untuk Jenis Bisnis ini</h4>
+              <div class="space-y-3 text-xs">
+                <div class="flex items-start gap-2 py-2 border-b border-gray-100">
+                  <span class="w-16 flex-shrink-0 font-bold text-slate-500 pt-1.5">Banks</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#0061AB">BCA</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#003D79">Mandiri</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#F36F21">BNI</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#00529C">BRI</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#00A19C">Permata</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#D71920">Danamon</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#B0132A">CIMB Niaga</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#00A651">BSI</span>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2 py-2 border-b border-gray-100">
+                  <span class="w-16 flex-shrink-0 font-bold text-slate-500 pt-1.5">Cards</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#1A1F71">VISA</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#EB001B">Mastercard</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#0B4EA2">JCB</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#006FCF">American Express</span>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2 py-2 border-b border-gray-100">
+                  <span class="w-16 flex-shrink-0 font-bold text-slate-500 pt-1.5">e-Wallet</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#EE4D2D">ShopeePay</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#4C3494">OVO</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#E9212D">LinkAja</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#118EEA">DANA</span>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2 py-2 border-b border-gray-100">
+                  <span class="w-16 flex-shrink-0 font-bold text-slate-500 pt-1.5">Cash</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#E4032C">Alfamart</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#00549F">Indomaret</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#0066B3">Lawson</span>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2 py-2">
+                  <span class="w-16 flex-shrink-0 font-bold text-slate-500 pt-1.5">Paylater</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#EE2737">Kredivo</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#2E3092">Indodana</span>
+                    <span class="inline-flex items-center px-2.5 py-1.5 rounded-full text-white text-[10.5px] font-bold shadow-sm" style="background:#EE4D2D">Shopee Paylater</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3">
+              <span id="basis-hint" class="text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg" data-i18n="basis_hint">⚠️ Pilih jenis bisnis terlebih dahulu</span>
+              <button id="btn-lanjut-basis" disabled class="h-11 bg-gray-300 text-gray-500 rounded-lg text-sm font-semibold px-8 shadow-sm cursor-not-allowed transition" onclick="enterWizard()" data-i18n="continue_wizard">LANJUT</button>
+            </div>
+          </div>
+        </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ STREAMING_CHUNK: STATUS & STEPPER TRACKING SCREEN ════════ -->
+    <section class="screen" id="s-status">
+      <div class="flex h-full" style="height: calc(100vh - 40px);">
+
+        <!-- ══ SIDE MENU ══ -->
+        <aside id="main-sidemenu" class="w-[220px] min-w-[220px] h-full flex flex-col bg-[#1E3A8A] text-slate-200 overflow-y-auto flex-shrink-0 border-r border-[#1E40AF] transition-all duration-300">
+
+          <!-- Logo -->
+          <div class="flex-shrink-0 flex justify-center px-3 pt-6 pb-8">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzODAgMTIzIiB3aWR0aD0iMzgwIiBoZWlnaHQ9IjEyMyI+PHJlY3QgeD0iOCIgeT0iMjIiIHdpZHRoPSI1OCIgaGVpZ2h0PSI1OCIgcng9IjE0IiBmaWxsPSIjMDU5NjY5Ii8+PHBhdGggZD0iTTI2IDM4djI2aDIyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSIzOCIgcj0iNSIgZmlsbD0iI2ZmZiIvPjx0ZXh0IHg9IjgwIiB5PSI2NCIgZm9udC1mYW1pbHk9IkFyaWFsLEhlbHZldGljYSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjQ0IiBmb250LXdlaWdodD0iODAwIiBmaWxsPSIjZmZmIj5MdW1pbmE8dHNwYW4gZmlsbD0iIzEwYjE4MSI+UGF5PC90c3Bhbj48L3RleHQ+PHRleHQgeD0iODIiIHk9IjkyIiBmb250LWZhbWlseT0iQXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTMiIGZpbGw9IiNjYmQ1ZTEiPkZpY3Rpb25hbCBicmFuZCDCtyBQb3J0Zm9saW8gcHJvdG90eXBlPC90ZXh0Pjwvc3ZnPg==" alt="Lumina Pay - A subsidiary of Lumina" class="h-[60px] w-auto max-w-full object-contain">
+          </div>
+
+          <!-- Nav label -->
+            <nav class="flex-1 py-2 text-[13px]">
+              <a data-nav="home" onclick="go('s-status')" class="flex items-center px-4 py-2.5 cursor-pointer border-l-2 border-emerald-400 text-emerald-300 font-semibold transition">Home</a>
+              <a data-nav="myapp" onclick="goMyApplication()" class="flex items-center px-4 py-2.5 cursor-pointer border-l-2 border-transparent hover:bg-[#1E40AF] transition text-white">My Application</a>
+              <a href="#" target="_blank" rel="noopener noreferrer" class="flex items-center px-4 py-2.5 cursor-pointer border-l-2 border-transparent hover:bg-[#1E40AF] transition text-white">Support</a>
+            </nav>
+        </aside>
+
+        <!-- ══ MAIN AREA (header + content) ══ -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+          <!-- Header: White bar with hamburger + lang + keluar -->
+          <div class="bg-white border-b border-gray-200 h-[52px] flex items-center justify-between px-5 text-slate-700 flex-shrink-0">
+            <div class="flex items-center gap-3">
+              <button class="p-1.5 text-slate-600 hover:bg-slate-100 rounded transition md:hidden" onclick="toggleSidebar(this)" aria-label="Menu">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              </button>
+            </div>
+            <div class="flex items-center gap-3">
+              <!-- Lang switcher -->
+              <div class="flex items-center gap-2 text-sm font-semibold">
+                <button onclick="setLang('id')" id="hdr-lang-id" class="text-[#1E3A8A] font-bold hover:text-[#1E3A8A]">ID</button>
+                <span class="text-slate-300">|</span>
+                <button onclick="setLang('en')" id="hdr-lang-en" class="text-slate-400 hover:text-slate-700">EN</button>
+              </div>
+              <span class="w-px h-5 bg-gray-200"></span>
+              <!-- Profile dropdown (gaya portal modern) -->
+              <div class="relative hdr-profile-wrap">
+                <button onclick="toggleProfileMenu(this)" class="flex items-center gap-2 hover:bg-slate-50 rounded-lg pl-1 pr-2 py-1 transition">
+                  <div class="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                  </div>
+                  <span class="text-sm font-semibold text-slate-700 max-w-[140px] truncate hdr-profile-name">Maju Jaya Abadi</span>
+                  <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="hidden hdr-profile-dropdown absolute right-0 top-full mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
+                  <a href="javascript:void(0)" onclick="go('s-login')" class="block px-3 py-2 text-sm text-slate-600 hover:bg-slate-50" data-i18n="exit_btn">Keluar</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Content: scrollable -->
+          <main class="flex-1 overflow-y-auto bg-white">
+            <div class="max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto p-6 md:p-8 space-y-6">
+
+              <!-- Page heading -->
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="min-w-0">
+                  <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2" id="dash-date-lbl">Kamis, 21 Mei 2026</div>
+                  <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">
+                    <span data-i18n="dash_welcome_prefix">Selamat datang,</span> <span class="text-[#1E3A8A]" id="dash-welcome-name">Maju Jaya Abadi</span>!
+                  </h1>
+                  <p class="mt-2 text-sm leading-relaxed text-slate-500" data-i18n="dash_welcome_subtitle">Anda hampir selesai! Ikuti langkah-langkah di bawah ini untuk menyelesaikan proses onboarding Anda bersama kami.</p>
+                  <div class="mt-4 inline-flex max-w-full items-center gap-2.5 rounded-full border border-slate-200 bg-slate-50 py-1 pl-3 pr-3.5 text-xs">
+                    <span class="font-medium text-slate-500" data-i18n="wiz_app_id_lbl">Application ID</span>
+                    <span class="h-3 w-px bg-slate-300" aria-hidden="true"></span>
+                    <span class="truncate font-mono font-medium text-slate-800" id="dash-app-id">APP-260814-0027</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ACCOUNT ACTIVATION STEPPER -->
+              <div class="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm">
+                <h2 class="text-base font-extrabold text-slate-900 mb-6" data-i18n="dash_stepper_title">Account activation status</h2>
+                <div class="relative flex flex-col md:flex-row justify-between items-center gap-8 md:gap-4 mb-6">
+                  <div class="absolute top-[42px] left-[12%] right-[12%] h-[2px] bg-emerald-300 hidden md:block z-0"></div>
+                  <div class="flex flex-col items-center text-center z-10 w-full md:w-1/4">
+                    <span class="block leading-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5" data-i18n="step_1_label">Step 1</span>
+                    <div id="step-num-1" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-[#059669] text-white shadow-sm border-2 border-white">1</div>
+                    <span class="text-xs font-bold text-slate-800 mt-2.5 mb-1.5" data-i18n="step_1_title">Account registration</span>
+                    <span id="step-badge-1" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Done</span>
+                  </div>
+                  <div class="flex flex-col items-center text-center z-10 w-full md:w-1/4">
+                    <span class="block leading-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5" data-i18n="step_2_label">Step 2</span>
+                    <div id="step-num-2" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-[#059669] text-white shadow-sm border-2 border-white">2</div>
+                    <span class="text-xs font-bold text-slate-800 mt-2.5 mb-1.5" data-i18n="step_2_title">Business data submission</span>
+                    <span id="step-badge-2" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Done</span>
+                  </div>
+                  <div class="flex flex-col items-center text-center z-10 w-full md:w-1/4">
+                    <span class="block leading-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5" data-i18n="step_3_label">Step 3</span>
+                    <div id="step-num-3" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 border-emerald-200 bg-emerald-50 text-emerald-700">3</div>
+                    <span class="text-xs font-bold text-slate-800 mt-2.5 mb-1.5" data-i18n="step_3_title">Business review</span>
+                    <span id="step-badge-3" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Needs revision</span>
+                  </div>
+                  <div class="flex flex-col items-center text-center z-10 w-full md:w-1/4">
+                    <span class="block leading-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5" data-i18n="step_4_label">Step 4</span>
+                    <div id="step-num-4" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 border-emerald-200 bg-emerald-50 text-emerald-700">4</div>
+                    <span class="text-xs font-bold text-slate-800 mt-2.5 mb-1.5" data-i18n="step_4_title">Account activation</span>
+                    <span id="step-badge-4" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500">Not started</span>
+                  </div>
+                </div>
+                <div class="pt-4 border-t border-gray-100 text-sm font-medium text-slate-700 flex items-center gap-1.5 flex-wrap">
+                  <span id="stepper-text-msg">A few details need correcting. Update your application</span>
+                  <span><a id="stepper-action-link" href="javascript:void(0)" class="text-[#1E3A8A] font-extrabold underline hover:text-[#172554] transition">here</a>.</span>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-100 flex flex-wrap items-center gap-2.5">
+                  <span class="text-xs font-semibold text-slate-400" data-i18n="preview_status_lbl">Preview status (demo):</span>
+                  <div class="flex flex-wrap gap-2">
+                    <button onclick="previewJump('draft')" id="p-pill-draft" class="px-3.5 py-1 rounded-full text-xs font-bold border border-slate-300 text-slate-600 hover:bg-slate-50 transition-all duration-200">Data entry</button>
+                    <button onclick="previewJump('review')" id="p-pill-review" class="px-3.5 py-1 rounded-full text-xs font-bold border border-slate-300 text-slate-600 hover:bg-slate-50 transition-all duration-200">Under review</button>
+                    <button onclick="previewJump('revision')" id="p-pill-revision" class="px-3.5 py-1 rounded-full text-xs font-bold border border-slate-300 text-slate-600 hover:bg-slate-50 transition-all duration-200">Needs revision</button>
+                    <button onclick="previewJump('approved')" id="p-pill-approved" class="px-3.5 py-1 rounded-full text-xs font-bold border border-slate-300 text-slate-600 hover:bg-slate-50 transition-all duration-200">Active</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Auditor remarks -->
+              <div id="auditor-remarks-container" role="alert" class="hidden relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <span class="absolute inset-y-0 left-0 w-1 bg-amber-500" aria-hidden="true"></span>
+
+                <div class="flex items-start gap-3 border-b border-slate-100 px-5 pb-4 pt-5 sm:px-6">
+                  <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600" aria-hidden="true">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12.5"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center justify-between gap-3">
+                      <h4 class="text-base font-semibold text-slate-900" data-i18n="revision_box_title">Item yang Perlu Diperbaiki</h4>
+                      <span id="auditor-remarks-count" class="hidden flex-shrink-0 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700"></span>
+                    </div>
+                    <p class="mt-0.5 text-sm text-slate-500" data-i18n="revision_box_sub">Perbaiki item di bawah ini lalu kirim ulang pengajuan Anda.</p>
+                  </div>
+                </div>
+
+                <div id="auditor-remarks-list" role="list" class="divide-y divide-slate-100"></div>
+
+                <div class="flex justify-end border-t border-slate-200 bg-slate-50 px-5 py-4 sm:px-6">
+                  <button type="button" onclick="goMyApplication()" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1E3A8A] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#172554] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3A8A] focus-visible:ring-offset-2 sm:w-auto">
+                    <span data-i18n="revision_box_btn">Perbaiki Sekarang</span>
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Riwayat Aktivitas (versi ringkas untuk merchant) -->
+              <div class="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm">
+                <h3 class="text-base font-extrabold text-slate-900 mb-5" data-i18n="status_audit_trail">Riwayat Aktivitas</h3>
+                <div id="st-timeline"></div>
+              </div>
+
+            </div>
+          </main>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════ STREAMING_CHUNK: BULK OUTLET SCREEN ════════ -->
+    <section class="screen" id="s-outlet">
+      <div class="flex h-full overflow-hidden">
+        <div id="s-outlet-sidebar"></div>
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <div id="s-outlet-header"></div>
+          <div class="flex-1 overflow-y-auto bg-white">
+          <div class="max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto p-4 md:p-8 space-y-6">
+        <div>
+          <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight" data-i18n="outlet_title">Registrasi Outlet Masal (Bulk Submerchant)</h1>
+          <p class="text-xs text-gray-500 mt-1" data-i18n="outlet_sub">Daftarkan puluhan hingga ratusan outlet/cabang sekaligus dalam sekali proses.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-sm">
+            <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider" data-i18n="outlet_step1">1. Unduh Template Excel</h4>
+            <p class="text-xs text-gray-500 leading-normal" data-i18n="outlet_step1_desc">Gunakan file template resmi Lumina Pay untuk pendaftaran outlet bulk Anda agar data konsisten.</p>
+            <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-4 bg-slate-50">
+              <span class="text-2xl text-emerald-600">📁</span>
+              <div class="flex-1 min-w-0">
+                <h4 class="text-xs font-bold text-gray-900 truncate">Template_Outlet_Bulk_LuminaPay.xlsx</h4>
+                <p class="text-[10px] text-gray-500" data-i18n="outlet_step1_sub">Mendukung pendaftaran s.d 1,000 outlet sekaligus</p>
+              </div>
+              <button class="px-3 py-1.5 bg-emerald-700 text-white text-xs font-bold rounded hover:bg-emerald-600 transition" onclick="showToast('Unduh template bulk outlet...')" data-i18n="outlet_download_btn">
+                Unduh
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-sm flex flex-col justify-between">
+            <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider" data-i18n="outlet_step2">2. Unggah Data Excel Terisi</h4>
+            <input type="file" id="bulk-excel-input" class="hidden" accept=".xlsx" onchange="simulateBulkUpload(this)">
+            <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 bg-slate-50 hover:bg-slate-100/70 transition cursor-pointer text-center" onclick="document.getElementById('bulk-excel-input').click()">
+              <p class="text-xs font-bold text-gray-800" id="bulk-excel-text" data-i18n="outlet_upload_hint">Klik untuk memilih file Excel dari perangkat Anda</p>
+              <p class="text-[10px] text-gray-500 mt-1" data-i18n="outlet_upload_subhint">Hanya mendukung .xlsx, ukuran maks 10MB</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-sm">
+          <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider" data-i18n="outlet_table_title">Status &amp; Progress Peninjauan Submerchant</h4>
+          <div class="overflow-x-auto border border-gray-200 rounded-xl">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-gray-50 border-b border-gray-200 text-gray-700 font-semibold">
+                  <th class="p-3" data-i18n="outlet_th_name">Nama Outlet</th>
+                  <th class="p-3" data-i18n="outlet_th_city">Kota</th>
+                  <th class="p-3" data-i18n="outlet_th_date">Tanggal Unggah</th>
+                  <th class="p-3" data-i18n="outlet_th_status">Status Verifikasi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100 text-gray-600" id="bulk-table-body">
+                <tr>
+                  <td class="p-3 font-medium text-gray-800">Maju Jaya Store — Cabang Slipi</td>
+                  <td class="p-3">Jakarta Barat</td>
+                  <td class="p-3">Hari ini</td>
+                  <td class="p-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">● Aktif</span></td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-medium text-gray-800">Maju Jaya Store — Cabang Depok Town Square</td>
+                  <td class="p-3">Depok</td>
+                  <td class="p-3">Hari ini</td>
+                  <td class="p-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">● Sedang Diproses</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ STREAMING_CHUNK: DATA CORRECTION / REVISION SCREEN ════════ -->
+    <section class="screen" id="s-update">
+      <div class="flex h-full overflow-hidden">
+        <div id="s-update-sidebar"></div>
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <div id="s-update-header"></div>
+          <div class="flex-1 overflow-y-auto bg-white">
+          <div class="max-w-3xl mx-auto p-4 md:p-8 space-y-6">
+        <div id="revisionFormHeader"></div>
+
+        <div id="revisionFormBody" class="space-y-4"></div>
+
+        <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
+          <button type="button" class="inline-flex h-11 w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3A8A] focus-visible:ring-offset-2 sm:w-auto" onclick="go('s-status')" data-i18n="cancel">Batal</button>
+          <button type="button" id="revision-submit-btn" class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#1E3A8A] px-5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#172554] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3A8A] focus-visible:ring-offset-2 sm:w-auto" onclick="submitRevisionData()">
+            <span data-i18n="update_submit_btn">Kirim Perbaikan</span>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+      </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ STREAMING_CHUNK: MY APPLICATION (READ-ONLY VIEW) ════════ -->
+    <section class="screen" id="s-myapp">
+      <div class="flex h-full overflow-hidden">
+        <div id="s-myapp-sidebar"></div>
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <div id="s-myapp-header"></div>
+          <div class="flex-1 overflow-y-auto bg-white">
+            <div class="max-w-4xl mx-auto p-4 md:p-8">
+              <div id="myAppBody"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ STREAMING_CHUNK: NDA & SANDBOX SETUP SCREEN ════════ -->
+    <section class="screen" id="s-nda">
+      <div class="flex h-full overflow-hidden">
+        <div id="s-nda-sidebar"></div>
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <div id="s-nda-header"></div>
+          <div class="flex-1 overflow-y-auto bg-white">
+            <div class="max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto p-4 md:p-8 space-y-6">
+              <div>
+                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight" id="nda-page-title" data-i18n="nda_title">NDA &amp; Aktivasi Sandbox</h1>
+                <p class="text-xs text-gray-500 mt-1" id="nda-page-sub" data-i18n="nda_sub">Tanda tangani NDA untuk mengaktifkan kredensial sandbox pengujian Anda.</p>
+              </div>
+
+              <!-- Section 1: NDA document + e-signature (conditional: Account Linkage only) -->
+              <div class="bg-white border border-gray-200 rounded-2xl p-6 space-y-5 shadow-sm" id="nda-doc-section">
+                <h3 class="text-sm font-bold text-[#1E3A8A] flex items-center gap-2 pb-3 border-b border-gray-100">
+                  📄 <span data-i18n="nda_doc_title">Dokumen Non-Disclosure Agreement</span>
+                </h3>
+                <p class="text-xs text-gray-500" data-i18n="nda_doc_desc">Dokumen NDA telah dibuat otomatis dengan nama perusahaan Anda. Unduh untuk meninjau sebelum menandatangani.</p>
+                <div class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <span class="text-lg">📎</span>
+                    <span class="text-xs font-semibold text-gray-700" id="nda-filename-preview">NDA_LuminaPay_Maju_Jaya_Abadi.pdf</span>
+                  </div>
+                  <button class="text-xs font-bold text-[#1E3A8A] border border-[#1E3A8A] px-3 py-1.5 rounded-lg hover:bg-slate-50 transition" onclick="showToast(state.lang==='id'?'Draf NDA sedang diunduh...':'Downloading NDA draft...')" data-i18n="nda_download_draft">Unduh Draf NDA</button>
+                </div>
+
+                <div class="border-t border-gray-100 pt-4">
+                  <label class="block text-xs font-semibold text-gray-700 mb-1.5" data-i18n="nda_sign_label">Tanda Tangan Elektronik <span class="text-red-500">*</span></label>
+                  <p class="text-[11px] text-gray-400 mb-2" data-i18n="nda_sign_hint">Gambar tanda tangan Anda di area di bawah ini menggunakan mouse atau layar sentuh.</p>
+                  <canvas id="sigCanvas" width="600" height="160" class="w-full border-2 border-dashed border-gray-300 rounded-xl bg-white cursor-crosshair"></canvas>
+                  <div class="flex justify-end mt-2">
+                    <button class="text-xs font-semibold text-gray-500 hover:text-red-600 transition flex items-center gap-1" onclick="clearSignature()">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg>
+                      <span data-i18n="nda_clear_btn">Hapus &amp; Ulangi</span>
+                    </button>
+                  </div>
+                </div>
+
+                <label class="flex items-start gap-2 cursor-pointer pt-1">
+                  <input type="checkbox" id="chk-nda-agree" class="rounded border-gray-300 text-[#1E3A8A] mt-0.5">
+                  <span class="text-xs text-gray-600" data-i18n="nda_chk_text">Saya telah membaca dan menyetujui seluruh ketentuan Non-Disclosure Agreement Lumina Pay.</span>
+                </label>
+              </div>
+
+              <!-- Section 2: Sandbox credentials -->
+              <div class="bg-white border border-gray-200 rounded-2xl p-6 space-y-5 shadow-sm">
+                <h3 class="text-sm font-bold text-[#1E3A8A] flex items-center gap-2 pb-3 border-b border-gray-100">
+                  🔑 <span data-i18n="nda_sandbox_title">Kredensial Sandbox</span>
+                </h3>
+                <div id="nda-sandbox-auto">
+                  <p class="text-xs text-gray-500 mb-4" data-i18n="nda_sandbox_desc">Gunakan kredensial berikut untuk menguji integrasi Anda di lingkungan sandbox sebelum go-live.</p>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Sandbox Merchant ID</label>
+                      <div class="font-mono text-xs bg-slate-900 text-emerald-400 rounded-lg px-3 py-2.5 select-all">SB-MCH-740294</div>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Sandbox API Key</label>
+                      <div class="font-mono text-xs bg-slate-900 text-emerald-400 rounded-lg px-3 py-2.5 select-all truncate">sk_sb_9f2a7c4e1b8d</div>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Verify Key (HMAC)</label>
+                      <div class="font-mono text-xs bg-slate-900 text-emerald-400 rounded-lg px-3 py-2.5 select-all truncate">vk_sb_3d6b0a9f5e2c</div>
+                    </div>
+                  </div>
+                  <button class="text-xs font-bold text-[#1E3A8A] border border-[#1E3A8A] px-3 py-1.5 rounded-lg hover:bg-slate-50 transition mt-4" onclick="showToast(state.lang==='id'?'Spesifikasi API sedang diunduh...':'Downloading API specification...')" data-i18n="nda_download_api">Unduh Spesifikasi API</button>
+                </div>
+                <div id="nda-sandbox-manual" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-900 text-xs">
+                  <span>⏳</span>
+                  <p id="nda-sandbox-manual-msg"></p>
+                </div>
+              </div>
+
+              <!-- Nav buttons -->
+              <div class="flex justify-between items-center pt-2">
+                <button class="h-11 border border-gray-300 text-gray-700 font-semibold px-6 rounded-lg text-sm hover:bg-gray-50 transition" onclick="resumeWizardAt('docs')" data-i18n="nda_back_btn">← Kembali ke Lampiran Dokumen</button>
+                <button class="h-11 bg-[#1E3A8A] text-white font-semibold px-6 rounded-lg text-sm hover:bg-opacity-95 transition shadow-sm" onclick="proceedFromNda()" data-i18n="nda_forward_btn">Lanjut ke IT Assessment →</button>
+              </div>
+
+              <!-- Secondary navigation -->
+              <div class="flex justify-center pb-8">
+                <button class="h-10 border border-gray-300 text-gray-500 font-semibold px-5 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-700 hover:border-gray-400 transition flex items-center gap-1.5" onclick="go('s-status')">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                  <span data-i18n="nda_back_dashboard_btn">Kembali ke Dashboard</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ STREAMING_CHUNK: MAIN APP SHELL WIZARD FORM ════════ -->
+    <div id="appShell" class="hidden h-[calc(100vh-40px)] flex overflow-hidden">
+
+      <!-- ══ SIDE MENU ══ -->
+      <aside id="wizard-sidemenu" class="w-[220px] min-w-[220px] h-full flex flex-col bg-[#1E3A8A] text-slate-200 overflow-y-auto flex-shrink-0 border-r border-[#1E40AF]">
+        <!-- Logo -->
+        <div class="flex-shrink-0 flex justify-center px-3 pt-6 pb-8">
+          <img src="" alt="Lumina Pay" class="h-[60px] w-auto max-w-full object-contain" id="wizard-sidebar-logo">
+        </div>
+        <!-- Nav Label -->
+          <nav class="flex-1 py-2 text-[13px]">
+            <a data-nav="home" onclick="go('s-status')" class="flex items-center px-4 py-2.5 cursor-pointer border-l-2 border-emerald-400 text-emerald-300 font-semibold transition">Home</a>
+            <a data-nav="myapp" onclick="goMyApplication()" class="flex items-center px-4 py-2.5 cursor-pointer border-l-2 border-transparent hover:bg-[#1E40AF] transition text-white">My Application</a>
+            <a href="#" target="_blank" rel="noopener noreferrer" class="flex items-center px-4 py-2.5 cursor-pointer border-l-2 border-transparent hover:bg-[#1E40AF] transition text-white">Support</a>
+          </nav>
+      </aside>
+
+      <!-- Main Content Area -->
+      <div class="flex-1 flex flex-col min-w-0 bg-white">
+        <!-- Header -->
+        <div class="bg-white border-b border-gray-200 h-[52px] flex-shrink-0 flex items-center justify-between px-5 text-slate-700">
+          <a class="text-xs font-bold text-slate-600 hover:text-[#1E3A8A] transition flex items-center gap-1.5" href="javascript:void(0)" onclick="go('s-status')">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            <span data-i18n="btn_exit_to_dashboard">Keluar ke Dashboard</span>
+          </a>
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 text-sm font-semibold">
+              <button onclick="setLang('id')" id="wiz-lang-id" class="text-[#1E3A8A] font-bold hover:text-[#1E3A8A]">ID</button>
+              <span class="text-slate-300">|</span>
+              <button onclick="setLang('en')" id="wiz-lang-en" class="text-slate-400 hover:text-slate-700">EN</button>
+            </div>
+            <span class="text-xs font-semibold text-slate-500" id="wiz-step-label">Langkah 1 dari 7</span>
+            <span class="w-px h-5 bg-gray-200"></span>
+            <div class="relative hdr-profile-wrap">
+              <button onclick="toggleProfileMenu(this)" class="flex items-center gap-2 hover:bg-slate-50 rounded-lg pl-1 pr-2 py-1 transition">
+                <div class="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                </div>
+                <span class="text-sm font-semibold text-slate-700 max-w-[120px] truncate hdr-profile-name">Maju Jaya Abadi</span>
+                <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="hidden hdr-profile-dropdown absolute right-0 top-full mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
+                <a href="javascript:void(0)" onclick="go('s-login')" class="block px-3 py-2 text-sm text-slate-600 hover:bg-slate-50" data-i18n="exit_btn">Keluar</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="h-1 bg-gray-100 flex-shrink-0">
+          <div id="wiz-progress-bar" class="h-1 bg-[#1E3A8A] transition-all duration-500" style="width:15%"></div>
+        </div>
+
+        <!-- BODY -->
+        <main class="flex-1 overflow-y-auto">
+          <div class="max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto p-4 md:p-8">
+            <div class="mb-5 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
+              <span class="text-slate-500"><span class="font-bold text-slate-700" data-i18n="wiz_app_id_lbl">Application ID</span> : <span class="font-mono text-slate-800" id="wiz-app-id">APP-260814-0027</span></span>
+              <span class="text-slate-500"><span class="font-bold text-slate-700" data-i18n="wiz_app_status_lbl">Status</span> : <span class="font-semibold text-amber-700" id="wiz-app-status" data-i18n="wiz_app_status_draft">Draft</span></span>
+              <span class="text-xs text-slate-400 flex items-center gap-1" id="wiz-autosave-hint" data-i18n="wiz_autosave">Perubahan tersimpan otomatis sebagai draft</span>
+            </div>
+            <div id="phase-ribbon" class="mb-6"></div>
+            <div id="wizContent"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+    </div>
+
+  </div> <!-- END 👤 PORTAL WEBAPPS MERCHANT -->
+
+  <!-- ================= STREAMING_CHUNK: PORTAL WEBAPPS INTERNAL LUMINA PAY ADMIN ================= -->
+  <div id="admin-app-container" class="flex-1 hidden flex flex-col h-[calc(100vh-40px)] overflow-hidden bg-[#F8FAFC]">
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+    <!-- Admin Sidebar -->
+    <aside class="w-64 bg-[#0F172A] text-slate-300 flex flex-col flex-shrink-0 border-r border-slate-800">
+      <div class="p-4 bg-[#020617] border-b border-slate-800 flex items-center gap-2">
+        <div class="text-base font-extrabold text-white flex items-center gap-1">
+          <span class="bg-[#2563EB] text-white px-2 py-0.5 rounded text-xs">Admin</span> Hub
+        </div>
+        <span class="text-[10px] text-slate-500">v2.1</span>
+      </div>
+      
+      <nav class="flex-1 py-4 text-xs space-y-1">
+        <div class="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Navigasi Utama</div>
+        <a onclick="openAdminMenu('dashboard')" id="adMenu-dashboard" class="flex items-center gap-2 px-4 py-2.5 bg-[#1E293B] text-white font-semibold border-l-4 border-[#2563EB] cursor-pointer transition">
+          Dashboard Overview
+        </a>
+        <a onclick="openAdminMenu('dataview')" id="adMenu-dataview" class="flex items-center gap-2 px-4 py-2.5 hover:bg-[#1E293B] hover:text-white cursor-pointer transition">
+          Antrean Validasi Merchant
+        </a>
+        <a onclick="openAdminMenu('commercial')" id="adMenu-commercial" class="flex items-center gap-2 px-4 py-2.5 hover:bg-[#1E293B] hover:text-white cursor-pointer transition">
+          Commercial Offer Manager
+        </a>
+        <a onclick="openAdminMenu('risk')" id="adMenu-risk" class="flex items-center gap-2 px-4 py-2.5 hover:bg-[#1E293B] hover:text-white cursor-pointer transition">
+          Risk Scoring Profiling
+        </a>
+        <a onclick="openAdminMenu('users')" id="adMenu-users" class="flex items-center gap-2 px-4 py-2.5 hover:bg-[#1E293B] hover:text-white cursor-pointer transition">
+          Manajemen Pengguna
+        </a>
+      </nav>
+
+      <div class="px-4 py-3 border-t border-slate-800">
+        <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Mode Simulasi — Login Sebagai</label>
+        <select id="adminRoleSelector" onchange="setAdminRole(this.value)" class="w-full h-8 bg-[#020617] border border-slate-700 rounded-lg px-2 text-[11px] text-slate-200 outline-none focus:border-[#2563EB]">
+          <option value="head">Head Validasi (Checker)</option>
+          <option value="staff" selected>Staff Validasi (Maker)</option>
+          <option value="viewer">Viewer — Sales</option>
+          <option value="superadmin">Super Admin</option>
+        </select>
+      </div>
+
+      <div class="p-4 bg-[#020617] border-t border-slate-800 text-[10px] text-slate-400 font-mono">
+        <p class="font-bold mb-1 text-slate-200" id="admSidebarUserName">User: Maya Larasati</p>
+        <p id="admSidebarUserRole">Divisi: Merchant Validation</p>
+      </div>
+    </aside>
+
+    <!-- Admin Main Body -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-8">
+      
+      <!-- admin screen: dashboard -->
+      <div id="admSec-dashboard" class="space-y-3">
+        <div class="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 class="text-lg font-bold text-[#0F172A] tracking-tight leading-tight">Ringkasan Validasi Merchant</h2>
+            <p class="text-[11px] text-[#64748B]">Ikhtisar real-time antrean pengajuan, SLA, dan aktivitas tim.</p>
+          </div>
+          <button onclick="renderAdminDashboard(); updateAdminFooterTime();" class="h-7 px-2.5 rounded-md border border-slate-200 bg-white text-[11px] font-semibold text-[#64748B] hover:bg-[#F8FAFC] transition">↻ Muat ulang</button>
+        </div>
+        <div id="admDashboardBody"></div>
+      </div>
+
+      <!-- admin screen: dataview -->
+      <div id="admSec-dataview" class="hidden space-y-6">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Antrean Validasi Merchant</h2>
+          <p class="text-xs text-slate-500 mt-1">Daftar pengajuan merchant baru yang masuk melalui Feature Merchant Onboarding. Gunakan panel ini untuk mengecek kelengkapan data form, berkas, &amp; dokumen legalitas merchant secara sistematis.</p>
+        </div>
+
+        <div class="bg-white border rounded-2xl shadow-sm overflow-hidden">
+          <div class="p-4 bg-slate-50 border-b border-slate-200 space-y-3">
+            <div class="flex flex-wrap justify-between items-center gap-3">
+              <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Antrean Validasi Merchant</h3>
+              <div class="flex items-center gap-1.5 flex-wrap" id="admQueueFilterTabs"></div>
+            </div>
+            <div class="flex flex-wrap items-end gap-3">
+              <div class="flex-1 min-w-[200px]">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Cari</label>
+                <input type="text" id="admQueueSearch" oninput="admQueueSearchTerm=this.value; renderAdmQueue()" placeholder="Nama perusahaan, Application ID, atau Sales PIC" class="w-full h-8 border border-slate-300 rounded-lg px-3 text-xs outline-none focus:border-[#2563EB] bg-white">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Diajukan Dari</label>
+                <input type="date" id="admQueueDateFrom" onchange="admQueueDateFrom=this.value; renderAdmQueue()" class="h-8 border border-slate-300 rounded-lg px-2 text-xs outline-none focus:border-[#2563EB] bg-white">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Sampai</label>
+                <input type="date" id="admQueueDateTo" onchange="admQueueDateTo=this.value; renderAdmQueue()" class="h-8 border border-slate-300 rounded-lg px-2 text-xs outline-none focus:border-[#2563EB] bg-white">
+              </div>
+              <button onclick="resetAdmQueueFilters()" class="h-8 px-3 border border-slate-300 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 transition">Reset</button>
+            </div>
+            <p class="text-[11px] text-slate-500" id="admQueueCount"></p>
+          </div>
+          <div class="overflow-x-auto text-xs">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 border-b font-semibold text-slate-700">
+                  <th class="p-3">Application ID</th>
+                  <th class="p-3">Nama Perusahaan</th>
+                  <th class="p-3">Bidang Usaha</th>
+                  <th class="p-3">Kategori</th>
+                  <th class="p-3">Pemeriksa (Validator)</th>
+                  <th class="p-3">Sales PIC</th>
+                  <th class="p-3">Scoring Risiko</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3">Diajukan</th>
+                  <th class="p-3">Disetujui</th>
+                  <th class="p-3">Aksi Review</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-600" id="admQueueTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- admin screen: user & role management -->
+      <div id="admSec-users" class="hidden space-y-6">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Manajemen Pengguna &amp; Peran</h2>
+          <p class="text-xs text-slate-500 mt-1">Kelola akun internal yang memiliki akses ke Admin Portal beserta tingkat kewenangannya. Hanya Super Admin yang dapat mengubah data di halaman ini.</p>
+        </div>
+        <div id="admUsersBody"></div>
+      </div>
+
+      <!-- admin screen: merchant application detail (full form + documents review) -->
+      <div id="admSec-merchantdetail" class="hidden space-y-6">
+        <div id="merchantDetailBody"></div>
+      </div>
+
+      <!-- admin screen: commercial -->
+      <div id="admSec-commercial" class="hidden space-y-6">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Commercial Offer &amp; Pricing Manager</h2>
+          <p class="text-xs text-slate-500 mt-1">Digunakan oleh Tim Sales untuk menyusun penawaran harga khusus (Pricing) setelah merchant terdaftar melalui skema standard Fixed Price.</p>
+        </div>
+
+        <div class="bg-white border rounded-2xl shadow-sm p-6 space-y-4">
+          <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider border-b pb-2">Negosiasi Pricing Khusus Merchant: <span id="adm-comm-title">Maju Jaya Abadi</span></h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="p-4 border rounded-xl">
+              <p class="font-bold text-slate-800 mb-1">QRIS Dinamis</p>
+              <p class="text-gray-400 mb-3">Harga Tetap: 0.7%</p>
+              <label class="block text-slate-600 mb-1">Negosiasi MDR Khusus (%)</label>
+              <input type="number" id="pricing-qris" step="0.01" class="w-full h-8 border rounded px-2 outline-none focus:border-[#2563EB] bg-white" value="0.65">
+            </div>
+
+            <div class="p-4 border rounded-xl">
+              <p class="font-bold text-slate-800 mb-1">Credit Card (CC)</p>
+              <p class="text-gray-400 mb-3">Harga Tetap: 2.9% + Rp2.000</p>
+              <label class="block text-slate-600 mb-1">MDR Persen (%)</label>
+              <input type="number" id="pricing-cc" step="0.1" class="w-full h-8 border rounded px-2 outline-none focus:border-[#2563EB] bg-white" value="2.7">
+            </div>
+
+            <div class="p-4 border rounded-xl">
+              <p class="font-bold text-slate-800 mb-1">Virtual Account (VA)</p>
+              <p class="text-gray-400 mb-3">Harga Tetap: Rp4.000 / tx</p>
+              <label class="block text-slate-600 mb-1">Fee per Transaksi (Rp)</label>
+              <input type="number" id="pricing-va" class="w-full h-8 border rounded px-2 outline-none focus:border-[#2563EB] bg-white" value="3500">
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-2 pt-4">
+            <button class="px-4 py-2 bg-[#2563EB] text-white font-bold text-xs rounded hover:bg-[#1E3A8A] shadow-sm transition" onclick="showToast('Pricing penawaran khusus berhasil disimpan.')">Simpan &amp; Kirim Penawaran Komersial</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- admin screen: risk -->
+      <div id="admSec-risk" class="hidden space-y-6">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Risk Scoring &amp; Automated Profiling</h2>
+          <p class="text-xs text-slate-500 mt-1">Sistem secara otomatis menghasilkan klasifikasi scoring risiko awal berdasarkan input onboarding merchant (Low, Medium, High).</p>
+        </div>
+
+        <div class="bg-white border rounded-2xl shadow-sm p-6 space-y-4">
+          <div class="flex justify-between items-center border-b pb-3">
+            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Scoring Risiko Otomatis: <span id="adm-risk-title">Maju Jaya Abadi</span></h3>
+            <span id="adm-risk-score-badge" class="px-2.5 py-1 rounded bg-amber-100 text-amber-800 font-bold text-xs">MEDIUM RISK (Calculated)</span>
+          </div>
+
+          <div class="text-xs text-slate-600 space-y-3">
+            <p><strong>Evaluasi Parameter Kuesioner (Langkah 7):</strong></p>
+            <ul class="list-disc pl-5 space-y-1 text-slate-700" id="adm-risk-bullets">
+              <li>Verifikasi Identitas Pengguna: <strong>Ya (IDEAL)</strong></li>
+              <li>Sistem Pemantauan Aktivitas: <strong>Ya (IDEAL)</strong></li>
+              <li>Mekanisme Pembekuan Pengguna: <strong>Ya (WAJIB)</strong></li>
+              <li>Penerapan Batas Transaksi: <strong>Tidak (RESIKO - Tidak Dibatasi)</strong></li>
+              <li>Periode Jeda Aktivasi Akun: <strong>Ya (WAJIB)</strong></li>
+            </ul>
+
+            <!-- Interactive AI Risk Insight Section -->
+            <div class="border border-blue-200 rounded-xl p-4 bg-blue-50/50 space-y-3">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <span class="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
+                  <span class="text-lg ai-sparkle">✨</span> Gemini AI Onboarding Risk Profiler
+                </span>
+                <button onclick="generateAiRiskReport()" class="bg-[#2563EB] hover:bg-[#1E3A8A] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition shadow-sm">
+                  <span>🪄</span> <span id="btn-ai-risk-text">Analisis dengan Gemini LLM</span>
+                </button>
+              </div>
+              <div id="ai-risk-report-container" class="hidden text-slate-800 bg-white border border-blue-200 p-4 rounded-lg text-xs leading-relaxed space-y-2 whitespace-pre-wrap max-h-80 overflow-y-auto">
+              </div>
+            </div>
+
+            <div class="bg-slate-50 border p-4 rounded-xl mt-4">
+              <label class="block font-bold text-slate-800 mb-2">Penyesuaian Scoring Akhir Manual &amp; Limit Layanan</label>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-[11px] mb-1">Final Risk Category</label>
+                  <select id="final-risk-select" class="w-full h-8 border rounded px-2 outline-none bg-white text-xs">
+                    <option value="low">Low Risk</option>
+                    <option value="medium" selected>Medium Risk</option>
+                    <option value="high">High Risk</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[11px] mb-1">Limit PG (Per-hari)</label>
+                  <input type="text" id="limit-pg" class="w-full h-8 border rounded px-2 outline-none text-xs bg-white" value="Rp 500.000.000">
+                </div>
+                <div>
+                  <label class="block text-[11px] mb-1">Limit Biller</label>
+                  <input type="text" id="limit-biller" class="w-full h-8 border rounded px-2 outline-none text-xs bg-white" value="Rp 100.000.000">
+                </div>
+                <div>
+                  <label class="block text-[11px] mb-1">Limit Disbursement</label>
+                  <input type="text" id="limit-disb" class="w-full h-8 border rounded px-2 outline-none text-xs bg-white" value="Rp 250.000.000">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-2 border-t pt-4">
+            <button class="px-4 py-2 bg-[#2563EB] text-white font-bold text-xs rounded hover:bg-[#1E3A8A] shadow-sm transition" onclick="showToast('Final scoring risiko & limit dana berhasil diverifikasi.')">Sahkan Scoring &amp; Tentukan Limit</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+    </div>
+    <!-- Footer Status Bar -->
+    <div class="flex-shrink-0 bg-white border-t border-slate-200 px-4 py-1.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-[10px] text-slate-400">
+      <div class="flex items-center gap-3 flex-wrap">
+        <span>👤 validasi@luminapay.example</span>
+        <span id="admFooterTime">—</span>
+        <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span> Secure session</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span>Lumina Pay Admin Hub</span>
+        <span>v2.1</span>
+        <span>© 2026 Lumina Pay</span>
+      </div>
+    </div>
+  </div> <!-- END ⚙️ PORTAL WEBAPPS INTERNAL LUMINA PAY -->
+
+  <!-- ================= STREAMING_CHUNK: FLOATING GEMINI COPILOT COMPANION WINDOW ================= -->
+  <!-- Floating Gemini Copilot Companion -->
+  <div id="ai-chat-bubble" class="fixed bottom-14 right-5 z-40 bg-[#1E3A8A] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center cursor-pointer transition hover:scale-105 active:scale-95 ai-sparkle border-2 border-white" onclick="toggleAiCopilot()">
+    <span class="text-2xl">✨</span>
+    <span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border border-white"></span>
+  </div>
+
+  <div id="ai-copilot-window" class="fixed bottom-14 right-5 z-50 w-80 sm:w-96 h-[500px] bg-white border border-slate-200 rounded-2xl shadow-2xl hidden flex-col overflow-hidden">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-slate-900 to-[#1E3A8A] p-4 text-white flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">✨</span>
+        <div>
+          <h4 class="text-xs font-extrabold tracking-wide">Lumina Pay Onboarding Copilot</h4>
+          <span class="text-[9px] text-slate-300">Powered by Gemini 3 Flash</span>
+        </div>
+      </div>
+      <button onclick="toggleAiCopilot()" class="text-white hover:text-slate-200 font-bold text-lg">&times;</button>
+    </div>
+    
+    <!-- Conversation Body -->
+    <div id="ai-copilot-messages" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50 text-xs">
+      <div class="bg-white border border-slate-100 p-3 rounded-xl text-slate-800 shadow-sm leading-relaxed">
+        <p class="font-bold text-[#1E3A8A] mb-1" id="ai-greeting-title">Halo! Saya Onboarding Copilot Anda. 👋</p>
+        <p id="ai-greeting-desc">Saya siap membantu Anda memahami dokumen legalitas Indonesia (NIB, KTP, SK Kemenkumham), memetakan struktur UBO, atau mengisi formulir mitigasi risiko fraud.</p>
+        <div class="mt-2.5 pt-2.5 border-t border-slate-100 flex flex-wrap gap-1.5">
+          <button onclick="askCopilotPredefined('Explain what NIB and SK Kemenkumham are.')" class="bg-[#EFF6FF] hover:bg-blue-100 text-[#1E3A8A] text-[10px] px-2 py-1 rounded font-medium transition">Apa itu NIB & Kemenkumham?</button>
+          <button onclick="askCopilotPredefined('Help me fill out the Fraud Risk evaluation.')" class="bg-[#EFF6FF] hover:bg-blue-100 text-[#1E3A8A] text-[10px] px-2 py-1 rounded font-medium transition">Bantu mitigasi fraud</button>
+          <button onclick="askCopilotPredefined('Suggest a solid security answers template.')" class="bg-[#EFF6FF] hover:bg-blue-100 text-[#1E3A8A] text-[10px] px-2 py-1 rounded font-medium transition">Template Jawaban IT Assessment</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Section -->
+    <div class="p-3 border-t bg-white flex gap-2 items-center">
+      <input id="ai-copilot-input" type="text" class="flex-1 h-9 border border-gray-300 rounded-lg px-3 text-xs outline-none focus:border-brandblue" placeholder="Tulis pertanyaan pendaftaran..." onkeydown="if(event.key==='Enter') sendCopilotMessage()">
+      <button onclick="sendCopilotMessage()" class="h-9 w-9 bg-[#1E3A8A] hover:bg-opacity-95 text-white rounded-lg flex items-center justify-center transition shadow-sm">
+        <svg class="w-4 h-4 transform rotate-90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════ STREAMING_CHUNK: NOTIFICATIONS AND TOAST COMPONENT ════════ -->
+  <div id="toastRegion" aria-live="polite" class="pointer-events-none fixed inset-x-0 bottom-[7.5rem] z-[100] flex flex-col items-center gap-2 px-4 sm:bottom-10"></div>
+
+  <!-- PERSISTENT FOOTER FLOW BAR -->
+  <div class="bg-[#0F172A] text-slate-400 text-[10px] py-2 px-4 flex justify-center items-center gap-2 border-t border-slate-800">
+    <span class="text-center font-mono text-slate-400" data-i18n="footer_text">Prototipe Interaktif Self-Service Merchant Onboarding — Studi Kasus Portofolio oleh Kiki Novalia</span>
+  </div>
+
+  <!-- ═══ HIDDEN SIDEBAR TEMPLATE ═══ -->
+  <div id="sidebar-template" style="display:none">
+    <aside id="main-sidemenu" class="w-[220px] min-w-[220px] h-full flex flex-col bg-[#1E3A8A] text-slate-200 overflow-y-auto flex-shrink-0 border-r border-[#1E40AF]">
+      <!-- Logo -->
+      <div class="flex-shrink-0 flex justify-center px-3 pt-6 pb-8">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzODAgMTIzIiB3aWR0aD0iMzgwIiBoZWlnaHQ9IjEyMyI+PHJlY3QgeD0iOCIgeT0iMjIiIHdpZHRoPSI1OCIgaGVpZ2h0PSI1OCIgcng9IjE0IiBmaWxsPSIjMDU5NjY5Ii8+PHBhdGggZD0iTTI2IDM4djI2aDIyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSIzOCIgcj0iNSIgZmlsbD0iI2ZmZiIvPjx0ZXh0IHg9IjgwIiB5PSI2NCIgZm9udC1mYW1pbHk9IkFyaWFsLEhlbHZldGljYSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjQ0IiBmb250LXdlaWdodD0iODAwIiBmaWxsPSIjZmZmIj5MdW1pbmE8dHNwYW4gZmlsbD0iIzEwYjE4MSI+UGF5PC90c3Bhbj48L3RleHQ+PHRleHQgeD0iODIiIHk9IjkyIiBmb250LWZhbWlseT0iQXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTMiIGZpbGw9IiNjYmQ1ZTEiPkZpY3Rpb25hbCBicmFuZCDCtyBQb3J0Zm9saW8gcHJvdG90eXBlPC90ZXh0Pjwvc3ZnPg==" alt="Lumina Pay" class="h-[60px] w-auto max-w-full object-contain">
+      </div>
+      <!-- Nav Label -->
+      <div class="px-4 pt-3 pb-1">
+      <nav class="flex-1 py-2 text-[13px]">
+        <a data-nav="home" onclick="go('s-status')" class="flex items-center px-4 py-2.5 cursor-pointer border-l-2 border-emerald-400 text-emerald-300 font-semibold transition">Home</a>
+        <a data-nav="myapp" onclick="goMyApplication()" class="flex items-center px-4 py-2.5 cursor-pointer border-l-2 border-transparent hover:bg-[#1E40AF] transition text-white">My Application</a>
+        <a href="#" target="_blank" rel="noopener noreferrer" class="flex items-center px-4 py-2.5 cursor-pointer border-l-2 border-transparent hover:bg-[#1E40AF] transition text-white">Support</a>
+      </nav>
+      </div>
+    </aside>
+  </div>
+
+  <datalist id="dl-bidang-usaha">
+    <option value="Perdagangan Eceran Melalui Pemesanan Pos atau Internet (E-Commerce)">
+    <option value="Restoran dan Penyediaan Makanan Keliling">
+    <option value="Kedai Kopi dan Minuman (F&B / Kafe)">
+    <option value="Perdagangan Besar Berbagai Macam Barang (FMCG)">
+    <option value="Aktivitas Pengembangan Aplikasi Perdagangan Melalui Internet">
+    <option value="Aktivitas Pemrograman Komputer Lainnya (SaaS / Software)">
+    <option value="Perdagangan Eceran Pakaian, Alas Kaki dan Aksesoris Mode">
+    <option value="Perdagangan Eceran Barang Elektronik dan Perlengkapan Rumah Tangga">
+    <option value="Perdagangan Eceran Kosmetik dan Produk Perawatan Tubuh">
+    <option value="Aktivitas Agen Perjalanan Wisata dan Tiket Online">
+    <option value="Jasa Logistik dan Pengiriman Barang (Kurir)">
+    <option value="Penyedia Kursus, Pendidikan dan Pelatihan Digital (EdTech)">
+    <option value="Penyediaan Akomodasi Hotel, Guest House dan Homestay">
+    <option value="Klinik Kesehatan, Farmasi dan Alat Kesehatan">
+    <option value="Game Products & Voucher Hiburan Digital">
+    <option value="Bill Payment Services (PPOB & Utilitas)">
+  </datalist>
+
+  <div id="portfolio-badge">Fictional brand &amp; dummy data<span>Portfolio prototype. Not a real product.</span></div>
+
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+
+  <script src="/app.js"></script>
+</body>
+</html>

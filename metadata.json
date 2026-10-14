@@ -1,0 +1,6 @@
+{
+  "name": "Lumina Pay — Merchant Onboarding Portal",
+  "description": "Platform pendaftaran dan verifikasi mandiri merchant Lumina Pay dengan sistem KYB terpadu, manajemen outlet massal, dan portal validasi internal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
